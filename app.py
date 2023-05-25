@@ -159,6 +159,7 @@ def temp_start_end(start = None, end = None):
                 filter(Measurement.station == 'USC00519281').\
                 filter(Measurement.date >= start).\
                 filter(Measurement.date <= end).all()
+
     # close session
     session.close()
 
