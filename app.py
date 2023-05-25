@@ -55,8 +55,8 @@ def home():
         f"/api/v1.0/Precipitation<br>"
         f"/api/v1.0/stations<br>"
         f"/api/v1.0/tob<br>"
-        f"/api/v1.0/start<br>"
-        f"/api/v1.0/start/end<br>"
+        f"/api/v1.0/temp/start<br>"
+        f"/api/v1.0/temp/start/end<br>"
         f"note: start and end must be dates in YYYYMMDD format with"
     )
 
@@ -118,15 +118,15 @@ def temp_output():
     return jsonify(temperatures = temperatures)
 
 # start and start end routes for temp's for USC00519281
-@app.route("/api/v1.0/<start>")
-@app.route("/api/v1.0/<start>/<end>")
+@app.route("/api/v1.0/temp/<start>")
+@app.route("/api/v1.0/temp/<start>/<end>")
 
 def temp_start_end(start = None, end = None):
     """ Return a Json list of the min temp, avg temp and max temp for a specified start and end """
         
     #sel technique
     sel = [func.min(Measurement.tobs),
-         func. avg(Measurement.tobs),
+         func.avg(Measurement.tobs),
           func.max(Measurement.tobs)]
 
     #two possible routes
@@ -134,27 +134,25 @@ def temp_start_end(start = None, end = None):
     #start is provided (without and end)
 
     if not end:
-        # transform start into date using dt.datetime
-        start = dt.datetime.strptime(start, "%Y%m%d")
-
-
+    
+        start = dt.datetime.strptime(start, "%m-%d-%Y")
         temp_stats_results = session.query(*sel).\
-            filter(Measurement.station == 'USC00519281').\
             filter(Measurement.date >= start).all()
-        # close session
-        session.close()
 
-        #unravel using numpy and convert to list (to jsonify)
+
+        session.close()
+       
+       #unravel using numpy and convert to list (to jsonify)
         temp_stats = list(np.ravel(temp_stats_results))
 
-        #return jsonify version of temp_stats
+       #return jsonify version of temp_stats
         return jsonify(min_avg_max = temp_stats)
 
     #start and end is provided
     
     # transform start into date using dt.datetime
-    start = dt.datetime.strptime(start, "%y%m%d")
-    end = dt.datetime.strptime(start, "%y%m%d")
+    start = dt.datetime.strptime(start, "%m-%d-%Y")
+    end = dt.datetime.strptime(end, "%m-%d-%Y")
 
 
     temp_stats_results = session.query(*sel).\
